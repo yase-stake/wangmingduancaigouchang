@@ -3,15 +3,15 @@
     <el-col :span="8" class="al">
         <h3>小U后台登陆</h3>
         <!-- 登录的输入框 -->
-        <el-form :model="formInfo" ref="form" label-width="100px" >
-            <el-form-item label="用户名">
+        <el-form :model="formInfo" ref="form" label-width="100px" :rules="rules" >
+            <el-form-item label="用户名" prop="username">
                 <el-input v-model="formInfo.username" class="p1"></el-input>
             </el-form-item>
-            <el-form-item label="密码">
+            <el-form-item label="密码" prop="username">
                 <el-input v-model="formInfo.password"  show-password class="p1"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="onSubmit" class="login-btn">登录</el-button>
+                <el-button type="primary" @click="submit" class="login-btn">登录</el-button>
               
             </el-form-item>
         </el-form>
@@ -21,18 +21,31 @@
 </template>
 
 <script>
+import {mapActions} from  "vuex"
 export default {
  data(){
  return{
      formInfo:{
-         username:"",
-         password:''
+         username:"刘浩岩",
+         password:'admin888'
+     },
+     rules:{
+          username:[{required:true,message:"必填",trigger:'blur'}],
+          password:[{required:true,message:"必填",trigger:'blur'}],
      }
  }
  },
  created(){},
  methods:{
-     onSubmit(){
+     ...mapActions({
+         login:"user/login"
+     }),
+     submit(){
+         this.$refs.form.validate(async valid=>{
+             if(valid){
+                 this.login(this.formInfo)
+             }
+         })
      }
  },
  components:{}

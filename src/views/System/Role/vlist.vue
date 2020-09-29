@@ -1,18 +1,14 @@
 <template>
  <div class="table-bg"> 
-    <el-table border :data="menulist" row-key="id"  :tree-props="{children: 'children'}">
+    <el-table border :data="rolelist" >
         <el-table-column prop="id" label="ID" align="center"></el-table-column>
-        <el-table-column prop="title" label="菜单名称"></el-table-column>
-        <el-table-column prop="url" label="菜单地址"></el-table-column>
-        <el-table-column label="图标">
+        <el-table-column prop="rolename" label="角色名称"></el-table-column>
+      
+       
+        <el-table-column label="状态">
             <template slot-scope="scope">
-              <i :class="scope.row.icon"></i>
-            </template>
-        </el-table-column>
-        <el-table-column label="类型">
-            <template slot-scope="scope">
-            <el-tag type="success" v-if="scope.row.type==1">目录</el-tag>
-            <el-tag type="warning" v-if="scope.row.type==2">菜单</el-tag>
+            <el-tag type="success" v-if="scope.row.status==1">启用</el-tag>
+            <el-tag type="danger" v-if="scope.row.status==2">禁用</el-tag>
             </template>
         </el-table-column>
         <el-table-column label="按钮">
@@ -28,7 +24,7 @@
  
 <script>
 import {mapGetters,mapActions} from "vuex";
-import { delMenu } from "@/request/menu";
+import { delRole } from "@/request/role";
 export default {
  data(){
  return{
@@ -42,20 +38,20 @@ export default {
  },
   computed: {
    ...mapGetters({
-       menulist:"menu/menulist"
+     rolelist:"role/rolelist"
 
    })
  },
  
  created(){},
   mounted() {
-     if(!this.menulist.length){
-         this.get_menu_list()
+     if(!this.rolelist.length){
+         this.get_role_list()
      }
  },
 methods:{
       ...mapActions({
-        get_menu_list:"menu/get_menu_list"
+        get_role_list:"role/get_role_list"
     }),
      edit(val){
          console.log(val)
@@ -67,11 +63,11 @@ methods:{
                     cancelButtonText: '取消',
                     type: 'warning'
                     }).then(async() => {
-                      let res = await delMenu(id); 
+                      let res = await delRole(id); 
             console.log(res)
         if(res.code==200){
             this.$message.success(res.msg)
-            this.get_menu_list()
+            this.get_role_list()
         }else{
                 this.$message.error(res.msg)
         }

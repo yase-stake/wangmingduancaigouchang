@@ -9,33 +9,12 @@
 <!-- 表单 -->
 <!-- rules 是设置表单必填项-->
 <el-form :model="forminfo" ref="form" :rules="rules" label-width="140px" >
-    <el-form-item label="菜单类型">
-         <el-radio-group v-model="forminfo.type">
-              <el-radio :label="1">目录</el-radio>
-            <el-radio :label="2">菜单</el-radio>
-             </el-radio-group>
-             </el-form-item>
-
-    <el-form-item v-if="forminfo.type==2"  label="上级目录">
-        <el-select v-model="forminfo.pid" placeholder="请选择">
-            <el-option label="顶级目录" :value="0"></el-option>
-            <el-option
-            v-for="item in menulist"
-            v-if="item.type==1"
-            :key="item.id" 
-            :label="item.title"
-            :value="item.id">
-            </el-option>
-  </el-select>
-                </el-form-item>
-    <el-form-item :label="forminfo.type==1?'目录名称':'菜单名称'" prop="title">
-        <el-input v-model="forminfo.title" placeholder="请输入名称"></el-input>
-                </el-form-item>
-    <el-form-item label="图标" prop="icon">
-        <el-input v-model="forminfo.icon" placeholder="请输入图标class"></el-input>
+        <el-form-item label="角色名称" prop="rolename">
+        <el-input v-model="forminfo.rolename"  placeholder="请输入角色名"></el-input>
                  </el-form-item>
-    <el-form-item label="菜单地址" v-if="forminfo.type==2" prop="url">
-        <el-input v-model="forminfo.url" placeholder="请输入菜单地址"></el-input>
+    <el-form-item label="角色权限">
+      <el-tree show-checkbox default-expand-all node-key='id' :check-strictly="checkStrictly" ref="tree" :data="menulist" :props="{children:'children',label:'title'}"  ></el-tree>
+      
             </el-form-item>
     <el-form-item label="状态">
        <el-switch
@@ -62,14 +41,11 @@
 </template> 
 
 <script>
-import {addMenu,editMenu} from "@/request/menu"
+import {addRole,editRole} from "@/request/role"
 import {mapGetters,mapActions} from "vuex"
 let defaultItem={
-            pid:0,
-         title:"",
-         icon:"",
-         type:1,//1目录  2菜单
-         url:"",
+         rolename:"",
+        menus:"",
          status:1//1正常
 }
 let resetItem={ ...defaultItem}
@@ -91,10 +67,11 @@ export default {
  return{
      forminfo:{...defaultItem},
      rules:{
-         title:[{required:true,message:"必填",trigger:'blur'},{}],
+         rolename:[{required:true,message:"必填",trigger:'blur'},{}],
         
-         url:[{required:true,message:"必填",trigger:'blur'},{}]
-     }
+       
+     },
+     checkStrictly:false
     
      
  }
@@ -112,25 +89,37 @@ export default {
  },
  methods:{
     ...mapActions({
-        get_menu_list:"menu/get_menu_list"
+        get_menu_list:"menu/get_menu_list",
+        get_role_list:"role/get_role_list"
+
     }),
      async submit(){
+      let idarr=this.$refs.tree.getCheckedKeys().concat(this.$refs.tree.getHalfCheckedKeys());
+      if(idarr.length){
+          this.forminfo.menus=idarr
+      }else{
+          this.$message.warning('你还没选呢')
+          return; 
+      }
+      this.forminfo.menus=idarr;
+      //表单验证
         this.$refs.form.validate(async valid=>{
             if(valid){
               let res;
             if(this.info.isAdd){
              
-             res = await addMenu(this.forminfo)
+             res = await addRole(this.forminfo)
           
                  }else{
-           res = await editMenu(this.forminfo)
+           res = await editRole(this.forminfo)
                 }
 
           if(res.code==200){
                this.$message.success(res.msg)
                this.info.isShow=false
-               this.get_menu_list()
-               this.cancel()
+              this.get_role_list();
+               this.forminfo={...resetItem};
+               this.$refs.tree.setCheckedKeys([])
            }else{
                this.$message.error(res.msg);
               this.reset()
@@ -141,21 +130,35 @@ export default {
          
        
      },
-    reset(){
+     reset(){
          if(this.info.isAdd){//添加重置
               this.forminfo={...defaultItem}
-        
+              this.$refs.tree.setCheckedKeys([])
          }else{
              //修改重置
              this.setinfo({...defaultItem})
-         }},
+         }
+        
+     },
      setinfo(val){
+         let idarr=val.menus.split(",");
+         if(idarr[0]){
+            //  树型控件的父子关联开关
+             this.checkStrictly=true;
+             //this.$nextTick(()=>{}) 等vue当前Dom节点渲染完之后再执行
+
+             this.$nextTick(()=>{
+                 this.$refs.tree.setCheckedKeys(idarr);
+                 this.checkStrictly=false
+                 //完成效果之后再设置回关联不然影响功能
+             })
+         } 
          defaultItem={...val}
          this.forminfo={...val}
      },
      cancel(){
           this.forminfo={...resetItem}
-         
+          this.$refs.tree.setCheckedKeys([])
      }
  },
  components:{}

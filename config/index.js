@@ -15,8 +15,8 @@ module.exports = {
     
         target: 'http://localhost:3030/api',
        
-        secure: false,
-       
+        // secure:false,
+        // SameSite=None,
         changeOrigin: true,
        
         pathRewrite: {

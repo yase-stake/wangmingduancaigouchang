@@ -1,42 +1,36 @@
 <template>
  <div> 
      <el-dialog
-  :title="info.isAdd?'添加角色':'修改角色'"
+  :title="info.isAdd?'添加轮播图':'修改轮播图'"
   :visible.sync="info.isShow"
   @close="cancel"
   width="40%"
   > 
 <!-- 表单 -->
 <!-- rules 是设置表单必填项-->
-<el-form :model="forminfo" ref="form" :rules="rules" label-width="140px" >
-    <el-form-item label="菜单类型">
-         <el-radio-group v-model="forminfo.type">
-              <el-radio :label="1">目录</el-radio>
-            <el-radio :label="2">菜单</el-radio>
-             </el-radio-group>
-             </el-form-item>
-
-    <el-form-item v-if="forminfo.type==2"  label="上级目录">
-        <el-select v-model="forminfo.pid" placeholder="请选择">
-            <el-option label="顶级目录" :value="0"></el-option>
-            <el-option
-            v-for="item in menulist"
-            v-if="item.type==1"
-            :key="item.id" 
-            :label="item.title"
-            :value="item.id">
-            </el-option>
-  </el-select>
-                </el-form-item>
-    <el-form-item :label="forminfo.type==1?'目录名称':'菜单名称'" prop="title">
+<el-form :model="forminfo" ref="form" :rules="rules" label-width="140px">
+   
+    <el-form-item label="轮播图名称" prop="title">
         <el-input v-model="forminfo.title" placeholder="请输入名称"></el-input>
                 </el-form-item>
-    <el-form-item label="图标" prop="icon">
-        <el-input v-model="forminfo.icon" placeholder="请输入图标class"></el-input>
-                 </el-form-item>
-    <el-form-item label="菜单地址" v-if="forminfo.type==2" prop="url">
-        <el-input v-model="forminfo.url" placeholder="请输入菜单地址"></el-input>
-            </el-form-item>
+                <el-form-item  label="轮播图片">
+    <el-upload
+    action=""
+  :auto-upload="false"
+ list-type="picture-card"
+  :limit="1"
+  :on-preview="see"
+  :file-list="filelist"
+  :on-change="change"
+  :on-remove="remove"
+>
+ 
+  <i class="el-icon-plus avatar-uploader-icon"></i>
+</el-upload>
+<el-dialog title="查看图片" :visible.sync="dialogVisible" :append-to-body="true">
+  <img width="100%" :src="dialogImageUrl" alt="">
+</el-dialog>
+  </el-form-item>
     <el-form-item label="状态">
        <el-switch
         v-model="forminfo.status" :active-value='1' :inactive-value="2" >
@@ -62,14 +56,11 @@
 </template> 
 
 <script>
-import {addMenu,editMenu} from "@/request/menu"
-import {mapGetters,mapActions} from "vuex"
+import {addBanner,editBanner} from "@/request/banner"
 let defaultItem={
-            pid:0,
+         
          title:"",
-         icon:"",
-         type:1,//1目录  2菜单
-         url:"",
+            img:"",
          status:1//1正常
 }
 let resetItem={ ...defaultItem}
@@ -89,48 +80,46 @@ export default {
     },
  data(){
  return{
+     dialogVisible:false,
+     dialogImageUrl:"",
      forminfo:{...defaultItem},
      rules:{
-         title:[{required:true,message:"必填",trigger:'blur'},{}],
-        
-         url:[{required:true,message:"必填",trigger:'blur'},{}]
-     }
+     },
+     filelist:[]
     
      
  }
  },
- computed: {
-   ...mapGetters({
-       menulist:"menu/menulist"
+ 
 
-   })
- }, 
- mounted() {
-     if(!this.menulist.length){
-         this.get_menu_list()
-     }
- },
+ 
  methods:{
-    ...mapActions({
-        get_menu_list:"menu/get_menu_list"
-    }),
+    
+    remove(file,fileList){
+          this.forminfo.img=[];
+    },
      async submit(){
         this.$refs.form.validate(async valid=>{
-            if(valid){
+            if(valid){//如果验证通过
               let res;
+              let fd= new FormData();
+                for(let k in this.forminfo){
+                 fd.append(k,this.forminfo[k])
+             }
             if(this.info.isAdd){
-             
-             res = await addMenu(this.forminfo)
+           
+             res = await addBanner(fd)
           
                  }else{
-           res = await editMenu(this.forminfo)
+           res = await editBanner(fd)
                 }
 
           if(res.code==200){
                this.$message.success(res.msg)
                this.info.isShow=false
-               this.get_menu_list()
+                this.$parent.update();      
                this.cancel()
+
            }else{
                this.$message.error(res.msg);
               this.reset()
@@ -150,12 +139,30 @@ export default {
              this.setinfo({...defaultItem})
          }},
      setinfo(val){
+         if(val.img){
+             this.filelist=[{
+             name:val.catename,
+             url:this.$host+ val.img
+         }]
+         }
          defaultItem={...val}
          this.forminfo={...val}
-     },
+     }
+    ,see(file){
+        
+        this.dialogVisible=true;
+        this.dialogImageUrl=file.url
+    },
+    change(file,fileList){
+        this.forminfo.img=file.raw
+   
+      
+    },
      cancel(){
-          this.forminfo={...resetItem}
+          this.forminfo={...resetItem};
          
+         this.filelist=[];
+        
      }
  },
  components:{}

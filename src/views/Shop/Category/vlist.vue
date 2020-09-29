@@ -1,12 +1,13 @@
 <template>
  <div class="table-bg"> 
-    <el-table border :data="menulist" row-key="id"  :tree-props="{children: 'children'}">
+    <el-table border :data="categorylist" row-key="id"  :tree-props="{children: 'children'}">
         <el-table-column prop="id" label="ID" align="center"></el-table-column>
-        <el-table-column prop="title" label="菜单名称"></el-table-column>
-        <el-table-column prop="url" label="菜单地址"></el-table-column>
-        <el-table-column label="图标">
+        <el-table-column prop="catename" label="分类名称"></el-table-column>
+    
+        <el-table-column label="分类图片">
             <template slot-scope="scope">
-              <i :class="scope.row.icon"></i>
+            <img width="80px" v-if="scope.row.img" :src="scope.row.img | pixImg()" alt="">
+            <img width="80px" v-else src="@/assets/img/timg.jpg" alt="">
             </template>
         </el-table-column>
         <el-table-column label="类型">
@@ -28,7 +29,8 @@
  
 <script>
 import {mapGetters,mapActions} from "vuex";
-import { delMenu } from "@/request/menu";
+import { delCategory } from "@/request/category";
+
 export default {
  data(){
  return{
@@ -42,20 +44,20 @@ export default {
  },
   computed: {
    ...mapGetters({
-       menulist:"menu/menulist"
+       categorylist:"category/categorylist"
 
    })
  },
  
  created(){},
   mounted() {
-     if(!this.menulist.length){
-         this.get_menu_list()
+     if(!this.categorylist.length){
+         this.get_category_list()
      }
  },
 methods:{
       ...mapActions({
-        get_menu_list:"menu/get_menu_list"
+        get_category_list:"category/get_category_list"
     }),
      edit(val){
          console.log(val)
@@ -67,11 +69,11 @@ methods:{
                     cancelButtonText: '取消',
                     type: 'warning'
                     }).then(async() => {
-                      let res = await delMenu(id); 
+                      let res = await delCategory(id); 
             console.log(res)
         if(res.code==200){
             this.$message.success(res.msg)
-            this.get_menu_list()
+            this.get_category_list()
         }else{
                 this.$message.error(res.msg)
         }

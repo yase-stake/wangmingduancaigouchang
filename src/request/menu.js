@@ -1,5 +1,5 @@
 import $axios from "@/common/http"
- 
+
 
 /**
  * 添加菜单
@@ -20,20 +20,24 @@ export async function getMenu() {
 
 
 export async function addMenu(data) {
-    return await  $axios.post("/menuadd", data)
+    return await $axios.post("/menuadd", data)
 
 }
 
 
- 
+
 
 export async function editMenu(data) {
-    let res = await $axios.post("/menuedit", data)
+    return await $axios.post("/menuedit", data)
     console.log(res)
 }
 
 
-export async function delMenu(data) {
-    let res = await $axios.post("/menudelete", data)
-    console.log(res)
+/**
+ * 添加菜单
+ * @param {*} id  删除的数据
+ */
+export async function delMenu(id) {
+    return await $axios.post("/menudelete", { id })
+    // console.log(res)
 }
