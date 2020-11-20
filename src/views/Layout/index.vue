@@ -2,7 +2,9 @@
 <el-container class="page">
     <el-aside :width="iscollapse?'64px':'200px'" class="page-side">
         
-          <left></left>
+          <left>
+           
+          </left>
         <!-- Aside content -->
     </el-aside>
         <el-container class="page-main">

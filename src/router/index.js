@@ -5,7 +5,8 @@ import store from '@/store';
 
 Vue.use(Router)
 
-let router= new Router({
+let router = new Router({
+ 
   routes: [
     {
       path: '/login',
